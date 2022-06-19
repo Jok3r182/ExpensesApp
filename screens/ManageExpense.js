@@ -1,46 +1,54 @@
-import { useContext, useLayoutEffect } from "react";
-import { StyleSheet, View } from "react-native";
-import Button from "../components/UI/Button";
-import IconButton from "../components/UI/IconButton";
-import { GlobalStyles } from "../constants/styles";
-import { ExpensesContext } from "../store/expenses-context";
+import { useContext, useLayoutEffect } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
+
+import ExpenseForm from '../components/ManageExpense/ExpenseForm';
+import Button from '../components/UI/Button';
+import IconButton from '../components/UI/IconButton';
+import { GlobalStyles } from '../constants/styles';
+import { ExpensesContext } from '../store/expenses-context';
 
 function ManageExpense({ route, navigation }) {
-  const editedExpenseId = route.params?.expenseId;
-  const isEditing = !!editedExpenseId; //convert to boolean
+  const expensesCtx = useContext(ExpensesContext);
 
-  const expensesCtx = useContext(ExpensesContext)
+  const editedExpenseId = route.params?.expenseId;
+  const isEditing = !!editedExpenseId;
+
+  const selectedExpense = expensesCtx.expenses.find(
+    (expense) => expense.id === editedExpenseId
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: isEditing ? "Edit Expense" : "Add Expense",
+      title: isEditing ? 'Edit Expense' : 'Add Expense',
     });
   }, [navigation, isEditing]);
 
   function deleteExpenseHandler() {
-    navigation.goBack()
-    expensesCtx.deleteExpense(editedExpenseId)
+    expensesCtx.deleteExpense(editedExpenseId);
+    navigation.goBack();
   }
 
-  function cancelHandler(){
-    navigation.goBack()
+  function cancelHandler() {
+    navigation.goBack();
   }
 
-  function confirmHandler(){
-    if(isEditing){
-      expensesCtx.updateExpense(editedExpenseId, {description: 'test', amount: 19.99, date: new Date('2022-05-19')})
-    }else{
-      expensesCtx.addExpense({description: 'test', amount: 19.99, date: new Date('2022-05-19')})
+  function confirmHandler(expenseData) {
+    if (isEditing) {
+      expensesCtx.updateExpense(editedExpenseId, expenseData);
+    } else {
+      expensesCtx.addExpense(expenseData);
     }
-    navigation.goBack()
+    navigation.goBack();
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.buttonContainer}>
-        <Button style={styles.button} mode="flat" onPress={cancelHandler}>Cancel</Button>
-        <Button style={styles.button} onPress={confirmHandler}>{isEditing? "Update" : "Add"}</Button>
-      </View>
+      <ExpenseForm
+        submitButtonLabel={isEditing ? 'Update' : 'Add'}
+        onSubmit={confirmHandler}
+        onCancel={cancelHandler}
+        defaultValues={selectedExpense}
+      />
       {isEditing && (
         <View style={styles.deleteContainer}>
           <IconButton
@@ -58,25 +66,16 @@ function ManageExpense({ route, navigation }) {
 export default ManageExpense;
 
 const styles = StyleSheet.create({
-  buttonContainer:{
-    justifyContent: 'center',
-    alignContent: 'center',
-    flexDirection: 'row'
-  },
   container: {
     flex: 1,
     padding: 24,
     backgroundColor: GlobalStyles.colors.primary800,
-  },
-  button:{
-    minWidth: 120,
-    marginHorizontal: 8
   },
   deleteContainer: {
     marginTop: 16,
     paddingTop: 8,
     borderTopWidth: 2,
     borderTopColor: GlobalStyles.colors.primary200,
-    alignItems: "center",
+    alignItems: 'center',
   },
 });
