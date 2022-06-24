@@ -1,2 +1,2 @@
 # ExpensesApp
-App made with React Native for expense tracking.
+App made with React Native to track expenses.
